@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>NSCLC Helper</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<div class="box">
+<h1>NSCLC Immunotherapy Helper</h1>
+<form id="patient-form">
+<label>Age<input type="number" name="age" required></label>
+<label>Sex<select name="sex"><option value="male">male</option><option value="female">female</option></select></label>
+<label>Smoking<select name="smoking_status"><option value="never">never</option><option value="former">former</option><option value="current">current</option></select></label>
+<label>PD-L1<input type="number" name="pd_l1" step="0.1" required></label>
+<label>TMB<input type="number" name="tmb" step="0.1" required></label>
+<label>KRAS<select name="kras_mutated"><option value="0">0</option><option value="1">1</option></select></label>
+<label>EGFR<select name="egfr_mutated"><option value="0">0</option><option value="1">1</option></select></label>
+<button type="submit">Predict</button>
+</form>
+<div id="result"></div>
+</div>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
