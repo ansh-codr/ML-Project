@@ -53,6 +53,14 @@ def train():
     joblib.dump(model, model_file)
     return model
 
+def ensure_processed_data():
+    if not proc_file.exists():
+        preprocess()
+
+def ensure_model_file():
+    if not model_file.exists():
+        train()
+
 def load_model():
     global _model
     if _model is None:
@@ -61,6 +69,11 @@ def load_model():
         else:
             _model = train()
     return _model
+
+def ensure_ready():
+    ensure_processed_data()
+    ensure_model_file()
+    return load_model()
 
 def predict_patient(data):
     model = load_model()

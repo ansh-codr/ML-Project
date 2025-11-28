@@ -1,22 +1,16 @@
 from flask import Flask, request, jsonify, render_template
 import os
-from model import predict_patient, load_model, preprocess, train
+from model import predict_patient, ensure_ready
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates", static_folder="static")
 
-@app.before_first_request
-def warm_up():
-    if not os.path.exists("data/processed/processed.csv"):
-        preprocess()
-    if not os.path.exists("model.pkl"):
-        train()
-    load_model()
+ensure_ready()
 
-@app.get("/")
+@app.route("/")
 def index():
     return render_template("index.html")
 
-@app.post("/predict")
+@app.route("/predict", methods=["POST"])
 def predict():
     data = request.get_json(force=True) or {}
     prob = predict_patient(data)
