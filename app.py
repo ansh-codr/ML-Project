@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify, render_template
 import os
-from model import predict_patient, ensure_ready
+from model import predict_patient, load_model
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
-ensure_ready()
+load_model()
 
 @app.route("/")
 def index():

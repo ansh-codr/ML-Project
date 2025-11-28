@@ -1,13 +1,14 @@
 import pandas as pd
 from pathlib import Path
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 import joblib
 
 base = Path(__file__).resolve().parent
 data_file = base / "data.csv"
 proc_file = base / "data" / "processed" / "processed.csv"
 model_file = base / "model.pkl"
+MAX_ROWS = 20000
 features = ["age","sex","smoking_status","pd_l1","tmb","kras_mutated","egfr_mutated"]
 target = "benefit"
 _model = None
@@ -39,41 +40,29 @@ def preprocess():
     df = make_frame(df)
     df = df.dropna()
     df = encode(df)
+    if len(df) > MAX_ROWS:
+        df = df.sample(MAX_ROWS, random_state=42)
     proc_file.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(proc_file, index=False)
     return df
 
 def train():
-    df = pd.read_csv(proc_file) if proc_file.exists() else preprocess()
+    df = preprocess()
     X = df[features]
     y = df[target]
     X_train, _, y_train, _ = train_test_split(X, y, test_size=0.2, random_state=42)
-    model = RandomForestClassifier(n_estimators=200, random_state=42)
+    model = LogisticRegression(max_iter=1000)
     model.fit(X_train, y_train)
-    joblib.dump(model, model_file)
+    joblib.dump(model, model_file, compress=3)
     return model
-
-def ensure_processed_data():
-    if not proc_file.exists():
-        preprocess()
-
-def ensure_model_file():
-    if not model_file.exists():
-        train()
 
 def load_model():
     global _model
     if _model is None:
-        if model_file.exists():
-            _model = joblib.load(model_file)
-        else:
-            _model = train()
+        if not model_file.exists():
+            raise FileNotFoundError("model.pkl missing. run python model.py locally first")
+        _model = joblib.load(model_file)
     return _model
-
-def ensure_ready():
-    ensure_processed_data()
-    ensure_model_file()
-    return load_model()
 
 def predict_patient(data):
     model = load_model()
@@ -83,5 +72,4 @@ def predict_patient(data):
     return float(proba)
 
 if __name__ == "__main__":
-    preprocess()
     train()
